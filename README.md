@@ -37,6 +37,8 @@ go get github.com/webxcom/auth-sdk
 | Frontend helper | `https://webxcom.com` | WebXCOM platform login URL |
 | Backend | `https://api.webxcom.com` | DeOAuth server |
 
+Note: Apps and games must be registered at https://dev.webxcom.com/. You can also find the detailed protocol documentation there.
+
 ## quick start
 
 ### frontend-style helper usage
