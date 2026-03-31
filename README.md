@@ -187,6 +187,46 @@ loginURL, err := sdk.BuildLoginURL(sdk.FrontendConfig{
 }, sdk.LoginParams{State: "custom-state"})
 ```
 
+### local test server
+
+This module also includes a small local test server that lets you exercise the SDK without depending on external network routing.
+
+Run it with:
+
+```bash
+go run ./cmd/localtestserver
+```
+
+By default it starts two local HTTP servers:
+
+- frontend mock: `http://127.0.0.1:8888`
+- backend test server: `http://127.0.0.1:9999`
+
+Useful routes:
+
+- `GET http://127.0.0.1:9999/frontend/login-url`
+  - returns a generated login URL and state
+- `GET http://127.0.0.1:9999/login?jwt=test-jwt`
+  - runs the mocked `authorize -> callback -> get_token` flow and returns `SlotInfo`
+- `POST http://127.0.0.1:9999/callback`
+  - callback endpoint used by the local backend flow
+
+Example:
+
+```bash
+curl http://127.0.0.1:9999/frontend/login-url
+curl "http://127.0.0.1:9999/login?jwt=test-jwt"
+```
+
+You can override the defaults with environment variables:
+
+- `SDK_CLIENT_ID`
+- `SDK_CLIENT_SECRET`
+- `SDK_FRONTEND_ADDR`
+- `SDK_BACKEND_ADDR`
+- `SDK_FRONTEND_BASE_URL`
+- `SDK_BACKEND_BASE_URL`
+
 ## release strategy
 
 - Use standard semantic version tags on the repository root, for example `v0.1.0`, `v0.2.0`, `v1.0.0`.

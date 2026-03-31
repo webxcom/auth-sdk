@@ -188,7 +188,9 @@ func (b *Backend) HandleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go func() {
-		slot, err := b.ExchangeCode(r.Context(), code)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+		defer cancel()
+		slot, err := b.ExchangeCode(ctx, code)
 		b.resolvePending(state, callbackResult{slot: slot, err: err})
 	}()
 }
@@ -314,7 +316,7 @@ func (b *Backend) authorize(ctx context.Context, jwt, state string) error {
 	values := url.Values{}
 	values.Set("client_id", b.clientID)
 	values.Set("redirect_uri", b.redirectURI)
-	values.Set("response_type", defaultResponseType)
+	values.Set("respose_type", defaultResponseType) // Node.js SDK 호환: "respose_type" (오타) — DeOAuth 서버가 이 파라미터명을 기대한다
 	values.Set("state", state)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, b.authServerURL+"/v1/oauth-meta/authorize?"+values.Encode(), nil)

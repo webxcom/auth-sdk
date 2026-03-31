@@ -275,6 +275,68 @@ func TestLogoutSendsBearerToken(t *testing.T) {
 	}
 }
 
+func TestHandleCallbackUsesDetachedContextForExchange(t *testing.T) {
+	t.Parallel()
+
+	authServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/v1/oauth-meta/authorize":
+			redirectURI := r.URL.Query().Get("redirect_uri")
+			state := r.URL.Query().Get("state")
+			go func() {
+				_, _ = http.Post(redirectURI+"?state="+url.QueryEscape(state)+"&success=1&code=server-code", "application/json", strings.NewReader("{}"))
+			}()
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{"success": true})
+		case "/v1/oauth-meta/get_token":
+			select {
+			case <-r.Context().Done():
+				t.Fatal("token exchange context was canceled before request completed")
+			default:
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"data": []map[string]any{{
+					"id":              "slot-detached",
+					"access_token":    "detached-access-token",
+					"content_address": "0xdetached",
+					"token_nickname":  "detached-slot",
+					"tr_cnt":          2,
+					"code":            "server-code",
+				}},
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer authServer.Close()
+
+	backend, err := NewBackend(BackendConfig{
+		AuthServerURL: authServer.URL,
+		ClientID:      "client-123",
+		ClientSecret:  "secret-456",
+		RedirectURI:   "http://127.0.0.1:19999/callback",
+	})
+	if err != nil {
+		t.Fatalf("NewBackend returned error: %v", err)
+	}
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/callback", backend.HandleCallback)
+	callbackServer := httptest.NewServer(mux)
+	defer callbackServer.Close()
+
+	backend.redirectURI = callbackServer.URL + "/callback"
+
+	slot, err := backend.GetSlotInfo(context.Background(), "jwt-detached", AuthorizeOptions{Timeout: time.Second})
+	if err != nil {
+		t.Fatalf("GetSlotInfo returned error: %v", err)
+	}
+	if got, want := slot.ID, "slot-detached"; got != want {
+		t.Fatalf("slot.ID = %q, want %q", got, want)
+	}
+}
+
 func basicAuthParts(header string) (string, string, bool) {
 	const prefix = "Basic "
 	if !strings.HasPrefix(header, prefix) {
