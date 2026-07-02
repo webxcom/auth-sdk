@@ -34,10 +34,15 @@ go get github.com/webxcom/auth-sdk
 
 | Surface | Default URL | Meaning |
 | --- | --- | --- |
-| Frontend helper | `https://webxcom.com` | WebXCOM platform login URL |
-| Backend | `https://api.webxcom.com` | DeOAuth server |
+| Frontend helper | `https://altscodex.com` | AltsCodex platform login URL |
+| Backend | `https://api.altscodex.com` | DeOAuth server |
 
-Note: Apps and games must be registered at https://dev.webxcom.com/. You can also find the detailed protocol documentation there.
+Defaults changed from the legacy `webxcom.com` domains in 2026-07 (brand
+migration to AltsCodex). The legacy domains currently route to the same
+servers, so existing integrations keep working; set the URL fields explicitly
+if you need to pin either domain.
+
+Note: Apps and games must be registered at https://developers.altscodex.com/. You can also find the detailed protocol documentation there.
 
 ## quick start
 

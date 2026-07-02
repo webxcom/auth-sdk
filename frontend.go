@@ -9,8 +9,13 @@ import (
 )
 
 const (
-	defaultWebXCOMURL    = "https://webxcom.com"
-	defaultAuthServerURL = "https://api.webxcom.com"
+	// 2026-07-02 기본 도메인 교체: webxcom.com → altscodex.com (브랜드 이전).
+	// 사유: 플랫폼 공식 브랜드가 AltsCodex(.com) 로 이전 완료. JS(@altscodex/sdk)·Python
+	//       (altscodex-sdk) SDK 는 이미 altscodex 도메인이 기본값이며 Go 만 레거시로 남아 있었다.
+	// 구 도메인(webxcom.com/api.webxcom.com)은 현재 동일 서버로 라우팅되므로 기존 통합자도
+	// 동작이 바뀌지 않지만, 장기적으로 폐기 대상이다. 명시적으로 URL 을 넣는 통합자는 무관.
+	defaultWebXCOMURL    = "https://altscodex.com"
+	defaultAuthServerURL = "https://api.altscodex.com"
 	defaultResponseType  = "code"
 )
 

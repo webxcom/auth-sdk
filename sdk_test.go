@@ -31,7 +31,8 @@ func TestBuildLoginURLUsesDefaultResponseType(t *testing.T) {
 	if got, want := parsed.Scheme, "https"; got != want {
 		t.Fatalf("scheme = %q, want %q", got, want)
 	}
-	if got, want := parsed.Host, "webxcom.com"; got != want {
+	// 2026-07-02 기본 도메인이 altscodex.com 으로 교체됨 (frontend.go 상수 주석 참조).
+	if got, want := parsed.Host, "altscodex.com"; got != want {
 		t.Fatalf("host = %q, want %q", got, want)
 	}
 	if got, want := parsed.Path, "/oauth/login"; got != want {
