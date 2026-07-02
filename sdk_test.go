@@ -154,11 +154,14 @@ func TestGetSlotInfoUsesResponseTypeAndResolvesAfterCallback(t *testing.T) {
 	}()
 
 	query := <-authorizeCalls
-	if got, want := query.Get("response_type"), "code"; got != want {
-		t.Fatalf("response_type = %q, want %q", got, want)
+	// ⚠️ 서버 계약: authorize 쿼리 파라미터명은 'respose_type'(오타)이다. A서버(DeOAuth)가
+	// 이 오타 파라미터명을 기대하므로 SDK 도 그대로 보낸다 (backend.go authorize 주석 참조).
+	// 기존 단언은 표준 철자('response_type')를 기대해 계약과 반대로 검사하고 있었다 — 교정.
+	if got, want := query.Get("respose_type"), "code"; got != want {
+		t.Fatalf("respose_type = %q, want %q", got, want)
 	}
-	if got := query.Get("respose_type"); got != "" {
-		t.Fatalf("respose_type should be absent, got %q", got)
+	if got := query.Get("response_type"); got != "" {
+		t.Fatalf("response_type should be absent (server expects the 'respose_type' typo), got %q", got)
 	}
 	state := query.Get("state")
 	if state == "" {
